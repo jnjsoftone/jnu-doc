@@ -1,0 +1,1 @@
+import i from"ini";import{loadFile as r,saveFile as o}from"jnu-abc";let n=o=>i.parse(r(o)),t=(r,n)=>o(r,i.stringify(n));export{n as loadIni,t as saveIni};

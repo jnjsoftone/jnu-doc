@@ -1,0 +1,1 @@
+import{parse as o}from"csv-parse/sync";import{stringify as r}from"csv-stringify";import{loadFile as s,saveFile as m}from"jnu-abc";let t=(r="")=>o(s(r),{columns:!0}),i=(o,s)=>{r(s,(r,s)=>{if(r)throw r;m(o,s)})};export{t as loadCsv,i as saveCsv};
