@@ -1,6 +1,6 @@
 import TurndownService from 'turndown';
 import { sanitizeName } from 'jnu-abc';
-import { escapeDoubleQuotes } from './utils-string.js';
+import { escapeDoubleQuotes } from './html.js';
 
 const DEFAULT_CONFIG = {
   headingStyle: 'atx',

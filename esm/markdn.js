@@ -1,4 +1,4 @@
-import e from"turndown";import{sanitizeName as t}from"jnu-abc";import{escapeDoubleQuotes as r}from"./utils-string.js";let n={headingStyle:"atx",hr:"---",bulletListMarker:"-",codeBlockStyle:"fenced",emDelimiter:"*",preformattedCode:!0},i={figure:{filter:"figure",replacement:(e,t)=>{let r=t.querySelector("img"),n=t.querySelector("figcaption");if(!r)return e;let i=r.getAttribute("alt")||"",o=r.getAttribute("src")||"",a=n?n.textContent?.trim():"";return`![${i}](${o})
+import e from"turndown";import{sanitizeName as t}from"jnu-abc";import{escapeDoubleQuotes as r}from"./html.js";let n={headingStyle:"atx",hr:"---",bulletListMarker:"-",codeBlockStyle:"fenced",emDelimiter:"*",preformattedCode:!0},o={figure:{filter:"figure",replacement:(e,t)=>{let r=t.querySelector("img"),n=t.querySelector("figcaption");if(!r)return e;let o=r.getAttribute("alt")||"",i=r.getAttribute("src")||"",a=n?n.textContent?.trim():"";return`![${o}](${i})
 
 ${a}
 
@@ -6,9 +6,9 @@ ${a}
 ${n}
 \`\`\`
 
-`}return`\`${e}\``}}},o=(e,r)=>(r||t)(e),a=(t,r={})=>{let{config:o=n,rules:a=i}=r,l=new e(o);return Object.entries(a).forEach(([e,t])=>{l.addRule(e,t)}),l.turndown(t)},l=e=>{let t="---\n";for(let[n,i]of Object.entries(e))if(t+=`${n}:`,Array.isArray(i))t+="\n",i.forEach(e=>{t+=`  - "${r(String(e))}"
-`});else switch(typeof i){case"number":let e=String(i).replace(/[^\d.-]/g,"");t+=e?` ${parseFloat(e)}
-`:"\n";break;case"boolean":t+=` ${i}
-`;break;case"string":""!==i.trim()?t+=` "${r(i)}"
-`:t+="\n";break;default:t+=i?` "${r(String(i))}"
-`:"\n"}return"---\n---"===(t+="---\n").trim()?"":t};export{o as mdTitle,a as mdContent,l as mdFrontmatter};
+`}return`\`${e}\``}}},i=(e,r)=>(r||t)(e),a=(t,r={})=>{let{config:i=n,rules:a=o}=r,l=new e(i);return Object.entries(a).forEach(([e,t])=>{l.addRule(e,t)}),l.turndown(t)},l=e=>{let t="---\n";for(let[n,o]of Object.entries(e))if(t+=`${n}:`,Array.isArray(o))t+="\n",o.forEach(e=>{t+=`  - "${r(String(e))}"
+`});else switch(typeof o){case"number":let e=String(o).replace(/[^\d.-]/g,"");t+=e?` ${parseFloat(e)}
+`:"\n";break;case"boolean":t+=` ${o}
+`;break;case"string":""!==o.trim()?t+=` "${r(o)}"
+`:t+="\n";break;default:t+=o?` "${r(String(o))}"
+`:"\n"}return"---\n---"===(t+="---\n").trim()?"":t};export{i as mdTitle,a as mdContent,l as mdFrontmatter};
