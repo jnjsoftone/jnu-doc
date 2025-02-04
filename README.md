@@ -15,7 +15,7 @@ cd C:/JnJ/Developments/Utils
 xcli -e init -r "jnu-doc||jnjsoftone||ts-swc-npm||Jnjsoft Nodejs Utility Library for Documents(yaml, docx, xlsx, pdf, hwp, pandoc, ...) Management Functions in Typescript"
 
 # install packages
-npm install cheerio turndown jnu-abc
+npm install csv-parse csv-stringify ini js-yaml node-xlsx cheerio turndown jnu-abc
 ```
 ## functions
 

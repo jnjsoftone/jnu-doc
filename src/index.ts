@@ -20,3 +20,9 @@ export {
   convertSrtFileToVtt, // Convert SubRipText(`srt`) file => Timed Text Markup Language(`vtt`) file
   convertSrtToVttInFolder // Convert SubRipText(`srt`) folder => Timed Text Markup Language(`vtt`) folder
 } from './conv.js';
+export {
+  Cheer,
+} from './cheer.js';
+export {
+  mdTitle, mdContent, mdFrontmatter
+} from './markdn.js';

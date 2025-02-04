@@ -11,4 +11,6 @@ srtToVtt, // Convert SubRipText(`srt`) format string => Timed Text Markup Langua
 vttToSrt, // Convert Timed Text Markup Language(`vtt`) format string => SubRipText(`srt`) format string
 convertSrtFileToVtt, // Convert SubRipText(`srt`) file => Timed Text Markup Language(`vtt`) file
 convertSrtToVttInFolder } from './conv.js';
+export { Cheer, } from './cheer.js';
+export { mdTitle, mdContent, mdFrontmatter } from './markdn.js';
 //# sourceMappingURL=index.d.ts.map
