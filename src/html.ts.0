@@ -5,37 +5,36 @@
 //   return unescape(text);
 // };
 
-const HTML_ENTITIES = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;',
-  ' ': '&nbsp;',
-  '/': '&#x2F;',
-  '=': '&#x3D;',
-  '©': '&copy;',
-  '®': '&reg;',
-} as const;
+const decodeHtml = (text: string): string => {
+  const entities: { [key: string]: string } = {
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&nbsp;': ' ',
+    '&#x2F;': '/',
+    '&#x3D;': '=',
+    '&copy;': '©',
+    '&reg;': '®',
+  };
 
-const ENCODE_PATTERN = new RegExp(
-  `[${Object.keys(HTML_ENTITIES)
-    .map((char) => escapeRegExp(char))
-    .join('')}]`,
-  'g'
-);
-
-const encodeHtml = (text: string): string => {
-  return text.replace(ENCODE_PATTERN, (char) => HTML_ENTITIES[char] || char);
+  return text.replace(/&[#\w]+;/g, (entity) => entities[entity] || entity);
 };
 
-const decodeHtml = (text: string): string => {
-  const decodingMap = Object.entries(HTML_ENTITIES).reduce((acc, [char, entity]) => {
-    acc[entity] = char;
-    return acc;
-  }, {} as { [key: string]: string });
+const encodeHtml = (text: string): string => {
+  const entities: { [key: string]: string } = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    ' ': '&nbsp;',
+    '/': '&#x2F;',
+    '=': '&#x3D;',
+  };
 
-  return text.replace(/&[#\w]+;/g, (entity) => decodingMap[entity] || entity);
+  return text.replace(/[&<>"'\s/=]/g, (char) => entities[char] || char);
 };
 
 // const encodeHtml = (text: string): string => {
