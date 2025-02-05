@@ -10,8 +10,8 @@ txtFromVtt, // Convert Timed Text Markup Language(`vtt`) format string => Text(`
 srtToVtt, // Convert SubRipText(`srt`) format string => Timed Text Markup Language(`vtt`) format string
 vttToSrt, // Convert Timed Text Markup Language(`vtt`) format string => SubRipText(`srt`) format string
 convertSrtFileToVtt, // Convert SubRipText(`srt`) file => Timed Text Markup Language(`vtt`) file
-convertSrtToVttInFolder } from './caption.js';
-export { escapeRegExp, escapeMarkdown, escapeValue, unescapeValue, escapeDoubleQuotes, formatVariables, escapeHtml, makeUrlAbsolute, formatDuration, } from './html.js';
-export { Cheer, } from './cheer.js';
+convertSrtToVttInFolder, } from './caption.js';
+export { encodeHtml, decodeHtml, escapeRegExp, escapeMarkdown, escapeValue, unescapeValue, escapeDoubleQuotes, formatVariables, makeUrlAbsolute, formatDuration, } from './html.js';
+export { Cheer } from './cheer.js';
 export { mdTitle, mdContent, mdFrontmatter } from './markdn.js';
 //# sourceMappingURL=index.d.ts.map

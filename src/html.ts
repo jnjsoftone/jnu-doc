@@ -1,3 +1,55 @@
+// 현재 사용 중인 방식 (추가 설치 불필요)
+import { unescape, escape } from 'querystring';
+
+const decodeHtml = (text: string): string => {
+  return unescape(text);
+};
+
+// const decodeHtmlEntities = (text: string): string => {
+//   const entities: { [key: string]: string } = {
+//     "&amp;": "&",
+//     "&lt;": "<",
+//     "&gt;": ">",
+//     "&quot;": '"',
+//     "&#39;": "'",
+//     "&nbsp;": " ",
+//     "&#x2F;": "/",
+//     "&#x3D;": "=",
+//     "&copy;": "©",
+//     "&reg;": "®",
+//   };
+
+//   return text.replace(/&[#\w]+;/g, (entity) => entities[entity] || entity);
+// };
+
+const encodeHtml = (text: string): string => {
+  const entities: { [key: string]: string } = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    ' ': '&nbsp;',
+    '/': '&#x2F;',
+    '=': '&#x3D;',
+  };
+
+  return text.replace(/[&<>"'\s/=]/g, (char) => entities[char] || char);
+};
+
+// const encodeHtml = (text: string): string => {
+//   return escape(text);
+// };
+
+// const encodeHtml = (unsafe: string): string => {
+//   return unsafe
+//     .replace(/&/g, '&amp;')
+//     .replace(/</g, '&lt;')
+//     .replace(/>/g, '&gt;')
+//     .replace(/"/g, '&quot;')
+//     .replace(/'/g, '&#039;');
+// };
+
 const escapeRegExp = (value: string): string => {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
@@ -24,8 +76,8 @@ const formatVariables = (variables: { [key: string]: string }): string => {
       const cleanKey = key.replace(/^{{|}}$/g, '');
       return `
         <div class="variable-item is-collapsed">
-          <span class="variable-key" data-variable="${escapeHtml(key)}">${escapeHtml(cleanKey)}</span>
-          <span class="variable-value">${escapeHtml(value)}</span>
+          <span class="variable-key" data-variable="${encodeHtml(key)}">${encodeHtml(cleanKey)}</span>
+          <span class="variable-value">${encodeHtml(value)}</span>
           <span class="chevron-icon" aria-label="Expand">
             <i data-lucide="chevron-right"></i>
           </span>
@@ -33,15 +85,6 @@ const formatVariables = (variables: { [key: string]: string }): string => {
       `;
     })
     .join('');
-};
-
-const escapeHtml = (unsafe: string): string => {
-  return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 };
 
 // Cases to handle:
@@ -109,13 +152,14 @@ const formatDuration = (ms: number): string => {
 };
 
 export {
+  encodeHtml,
+  decodeHtml,
   escapeRegExp,
   escapeMarkdown,
   escapeValue,
   unescapeValue,
   escapeDoubleQuotes,
   formatVariables,
-  escapeHtml,
   makeUrlAbsolute,
   formatDuration,
 };
