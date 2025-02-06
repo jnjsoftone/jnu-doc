@@ -1,55 +1,31 @@
 // 현재 사용 중인 방식 (추가 설치 불필요)
-// import { unescape, escape } from 'querystring';
-
-// const decodeHtml = (text: string): string => {
-//   return unescape(text);
-// };
-
-const HTML_ENTITIES = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;',
-  ' ': '&nbsp;',
-  '/': '&#x2F;',
-  '=': '&#x3D;',
-  '©': '&copy;',
-  '®': '&reg;',
-} as const;
-
-const ENCODE_PATTERN = new RegExp(
-  `[${Object.keys(HTML_ENTITIES)
-    .map((char) => escapeRegExp(char))
-    .join('')}]`,
-  'g'
-);
+import { unescape, escape } from 'querystring';
 
 const encodeHtml = (text: string): string => {
-  return text.replace(ENCODE_PATTERN, (char) => HTML_ENTITIES[char] || char);
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+    .replace(/ /g, '&nbsp;')
+    .replace(/\//g, '&#x2F;')
+    .replace(/=/g, '&#x3D;');
 };
 
 const decodeHtml = (text: string): string => {
-  const decodingMap = Object.entries(HTML_ENTITIES).reduce((acc, [char, entity]) => {
-    acc[entity] = char;
-    return acc;
-  }, {} as { [key: string]: string });
-
-  return text.replace(/&[#\w]+;/g, (entity) => decodingMap[entity] || entity);
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#x2F;/g, '/')
+    .replace(/&#x3D;/g, '=')
+    .replace(/&copy;/g, '©')
+    .replace(/&reg;/g, '®');
 };
-
-// const encodeHtml = (text: string): string => {
-//   return escape(text);
-// };
-
-// const encodeHtml = (unsafe: string): string => {
-//   return unsafe
-//     .replace(/&/g, '&amp;')
-//     .replace(/</g, '&lt;')
-//     .replace(/>/g, '&gt;')
-//     .replace(/"/g, '&quot;')
-//     .replace(/'/g, '&#039;');
-// };
 
 const escapeRegExp = (value: string): string => {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -88,15 +64,6 @@ const formatVariables = (variables: { [key: string]: string }): string => {
     .join('');
 };
 
-// Cases to handle:
-// Full URLs: https://example.com/x.png
-// URLs without protocol: //example.com/x.png
-// Relative URLs:
-// - x.png
-// - /x.png
-// - img/x.png
-// - ../x.png
-
 const makeUrlAbsolute = (element: any, attributeName: string, baseUrl: any) => {
   const attributeValue = element.getAttribute(attributeName);
   if (attributeValue) {
@@ -131,18 +98,6 @@ const makeUrlAbsolute = (element: any, attributeName: string, baseUrl: any) => {
     }
   }
 };
-
-// export function processUrls(htmlContent: string, baseUrl: any): string {
-// 	const tempDiv = document.createElement('div');
-// 	tempDiv.innerHTML = htmlContent;
-
-// 	// Handle relative URLs for both images and links
-// 	tempDiv.querySelectorAll('img').forEach(img => makeUrlAbsolute(img, 'srcset', baseUrl));
-// 	tempDiv.querySelectorAll('img').forEach(img => makeUrlAbsolute(img, 'src', baseUrl));
-// 	tempDiv.querySelectorAll('a').forEach(link => makeUrlAbsolute(link, 'href', baseUrl));
-
-// 	return tempDiv.innerHTML;
-// }
 
 const formatDuration = (ms: number): string => {
   if (ms < 1000) {
