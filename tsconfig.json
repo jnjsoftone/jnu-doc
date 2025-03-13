@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "esnext",
-    "lib": ["es2020"],
+    "lib": [ "es2020" ],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -15,6 +15,6 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.test.ts"]
-} 
+  "include": [ "src/**/*", "_backups/cheer/cheer_0.ts" ],
+  "exclude": [ "node_modules", "**/*.test.ts" ]
+}

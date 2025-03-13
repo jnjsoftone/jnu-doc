@@ -8,55 +8,6 @@ interface CheerSetting {
   callback?: (value: any) => any;
 }
 
-/**
- * XPath를 CSS 선택자로 변환하는 간단한 함수
- */
-const xpathToSelector = (xpath: string): string => {
-  console.log('@@@ Converting xpath:', xpath);
-
-  // 상대 경로 XPath 처리 (.//td[3]/a 형식)
-  if (xpath.startsWith('.//')) {
-    return xpath
-      .replace('.//td', 'td')
-      .replace(/td\[(\d+)\]/g, 'td:nth-child($1)')
-      .replace(/\/a$/, ' a')
-      .replace(/\/span$/, ' span')
-      .replace(/\/text\(\)$/, '');
-  }
-
-  // 단순 td 경로 처리 (td[3]/a 형식)
-  if (xpath.startsWith('td')) {
-    return xpath
-      .replace(/td\[(\d+)\]/g, 'td:nth-child($1)')
-      .replace(/\/a$/, ' a')
-      .replace(/\/span$/, ' span')
-      .replace(/\/text\(\)$/, '');
-  }
-
-  // ID를 포함한 절대 경로 XPath 처리
-  let selector = xpath;
-
-  // ID 처리
-  selector = selector.replace(/\/\/\*\[@id="([^"]+)"\]/g, '#$1');
-
-  // 테이블 행 처리
-  selector = selector.replace(/\/tbody\/tr$/, ' tbody tr');
-
-  // 나머지 경로 처리
-  selector = selector
-    .replace(/\/div\[(\d+)\]/g, ' > div:nth-child($1)')
-    .replace(/\/div/g, ' > div')
-    .replace(/\/table/g, ' > table')
-    .replace(/\/tbody/g, ' > tbody')
-    .replace(/\/tr/g, ' > tr')
-    .replace(/\/td\[(\d+)\]/g, ' > td:nth-child($1)')
-    .replace(/\/td/g, ' > td')
-    .replace(/\/a/g, ' > a');
-
-  // console.log('@@@ Converted to selector:', selector);
-  return selector;
-};
-
 // *
 const querySelectorAll = ($root: any, selector: string) => {
   return $root instanceof Function ? $root(selector) : $root.find(selector);
@@ -152,35 +103,23 @@ const dictFromRoot = ($root: any, settings: any[] = []) => {
   return dict;
 };
 
-// * settings = [{'key': '', 'selector': '', 'attribute': '', 'callback': (value: any) => any}, ...]
-const dictsFromRoots = (
-  $roots: any[],
-  settings: any[] = [],
-  required: string[] = [],
-  afterRow?: (row: any) => void,
-  afterRows?: (rows: any[]) => void
-) => {
+// * settings = [{'key': '', 'selector': '', 'attribute': ''}, ...]
+const dictsFromRoots = ($roots: any[], settings: any[] = [], required: string[] = []) => {
   let dicts: any[] = [];
   for (let i = 0; i < $roots.length; i++) {
     let $root = $roots[i];
+    // let $root = $roots.eq(i);
     let dict = dictFromRoot($root, settings);
     if (!dict) continue;
     let notPush = false;
     for (let key of required) {
+      // 필수항목 값 확인
       if (!dict[key]) {
         notPush = true;
         break;
       }
     }
-    if (!notPush) {
-      if (afterRow) {
-        afterRow(dict);
-      }
-      dicts.push(dict);
-    }
-  }
-  if (afterRows) {
-    afterRows(dicts);
+    if (!notPush) dicts.push(dict);
   }
   return dicts;
 };
@@ -283,16 +222,10 @@ class Cheer {
     return dictFromRoot(this.$, settings);
   }
 
-  jsons(
-    $elements: any,
-    settings: any[] = [],
-    required: string[] = [],
-    afterRow?: (row: any) => any,
-    afterRows?: (rows: any[]) => any[]
-  ) {
+  jsons($elements: any, settings: any[] = [], required: string[] = []) {
     // cheerio 객체를 배열로 변환
     const elements = $elements.toArray().map((el: any) => this.$(el));
-    return dictsFromRoots(elements, settings, required, afterRow, afterRows);
+    return dictsFromRoots(elements, settings, required);
   }
 
   remove(selector: string) {
