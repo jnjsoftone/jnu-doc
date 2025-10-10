@@ -8,7 +8,7 @@ declare class Cheer {
     values(selector: string, attribute?: string): any[];
     html(selector: string): any;
     json(settings?: any[]): any;
-    jsons($elements: any, settings?: any[], required?: string[], afterRow?: (row: any) => any, afterRows?: (rows: any[]) => any[]): any[];
+    jsons($elements: any, settings?: any[], required?: string[]): any[];
     remove(selector: string): void;
     del(selector: string): void;
     add(srcHtml: string, dstSelector: string, location?: 'before' | 'after'): void;
@@ -16,4 +16,4 @@ declare class Cheer {
     find(selector: string): any;
 }
 export { Cheer };
-//# sourceMappingURL=cheer.d.ts.map
+//# sourceMappingURL=cheer_0.d.ts.map

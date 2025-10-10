@@ -33,4 +33,12 @@ export {
   formatDuration,
 } from './html.js';
 export { Cheer } from './cheer.js';
+export { Xpath } from './xpath.js';
+export {
+  checkPandocInstalled,
+  convertWithPandoc,
+  convertFileWithPandoc,
+  markdownToHtml,
+  htmlToMarkdown,
+} from './pandoc.js';
 export { mdTitle, mdContent, mdFrontmatter } from './markdn.js';

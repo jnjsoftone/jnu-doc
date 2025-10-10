@@ -13,5 +13,7 @@ convertSrtFileToVtt, // Convert SubRipText(`srt`) file => Timed Text Markup Lang
 convertSrtToVttInFolder, } from './caption.js';
 export { encodeHtml, decodeHtml, escapeRegExp, escapeMarkdown, escapeValue, unescapeValue, escapeDoubleQuotes, formatVariables, makeUrlAbsolute, formatDuration, } from './html.js';
 export { Cheer } from './cheer.js';
+export { Xpath } from './xpath.js';
+export { checkPandocInstalled, convertWithPandoc, convertFileWithPandoc, markdownToHtml, htmlToMarkdown, } from './pandoc.js';
 export { mdTitle, mdContent, mdFrontmatter } from './markdn.js';
 //# sourceMappingURL=index.d.ts.map
