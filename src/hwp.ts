@@ -1,20 +1,33 @@
+/**
+ * Utilities for working with Hangul Word Processor (HWP) documents.
+ * Includes conversion helpers based on LibreOffice as well as in-process
+ * text extraction powered by hwp.js.
+ */
 import { execFile } from 'node:child_process';
 import { access, constants, mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, extname, join, resolve } from 'node:path';
 import { promisify } from 'node:util';
+import { get as httpGet } from 'node:http';
+import { get as httpsGet } from 'node:https';
+import { URL } from 'node:url';
+import type { CFB$ParsingOptions } from 'cfb';
+import { parse } from 'hwp.js';
+import type HWPDocument from 'hwp.js/build/models/document';
+import type Paragraph from 'hwp.js/build/models/paragraph';
+import type HWPChar from 'hwp.js/build/models/char';
 
 const execFileAsync = promisify(execFile);
 
-export type HwpConvertibleFormat = 'pdf' | 'doc' | 'docx' | 'xml' | 'html';
+type HwpConvertibleFormat = 'pdf' | 'doc' | 'docx' | 'xml' | 'html';
 
-export interface HwpConvertOptions {
+interface HwpConvertOptions {
   outputDir?: string;
   converterBinary?: string;
   filter?: string;
 }
 
-export interface HwpConvertResult {
+interface HwpConvertResult {
   outputPath: string;
   stdout: string;
   stderr: string;
@@ -104,7 +117,7 @@ async function convertWithLibreOffice(
   return { outputPath, stdout, stderr };
 }
 
-export async function convertHwp(
+async function convertHwp(
   inputPath: string,
   format: HwpConvertibleFormat,
   options: HwpConvertOptions = {}
@@ -112,32 +125,32 @@ export async function convertHwp(
   return convertWithLibreOffice(inputPath, { format, filter: options.filter }, options);
 }
 
-export async function convertHwpToPdf(
+async function convertHwpToPdf(
   inputPath: string,
   options: HwpConvertOptions = {}
 ): Promise<HwpConvertResult> {
   return convertWithLibreOffice(inputPath, { format: 'pdf', filter: options.filter }, options);
 }
 
-export async function convertHwpToDocx(
+async function convertHwpToDocx(
   inputPath: string,
   options: HwpConvertOptions = {}
 ): Promise<HwpConvertResult> {
   return convertWithLibreOffice(inputPath, { format: 'docx', filter: options.filter }, options);
 }
 
-export async function convertHwpToXml(
+async function convertHwpToXml(
   inputPath: string,
   options: HwpConvertOptions = {}
 ): Promise<HwpConvertResult> {
   return convertWithLibreOffice(inputPath, { format: 'xml', filter: options.filter }, options);
 }
 
-export interface HwpReadOptions extends HwpConvertOptions {
+interface HwpReadOptions extends HwpConvertOptions {
   encoding?: BufferEncoding;
 }
 
-export async function readHwpAsHtml(
+async function readHwpAsHtml(
   inputPath: string,
   options: HwpReadOptions = {}
 ): Promise<string> {
@@ -150,18 +163,163 @@ export async function readHwpAsHtml(
   return readFile(outputPath, { encoding: options.encoding ?? 'utf8' });
 }
 
-export interface HwpWriteOptions extends HwpConvertOptions {
+interface HwpWriteOptions extends HwpConvertOptions {
   workingDir?: string;
 }
 
-export async function writeHwpFromDocx(
+async function writeHwpFromDocx(
   docxPath: string,
   options: HwpWriteOptions = {}
 ): Promise<HwpConvertResult> {
   return convertWithLibreOffice(docxPath, { format: 'doc', filter: options.filter }, options);
 }
 
-export function isHwpSupportedEnvironment() {
+function isHwpSupportedEnvironment() {
   return process.platform === 'linux';
 }
 
+const HWP_CHAR_TYPE = {
+  char: 0,
+  inline: 1,
+  extended: 2,
+} as const;
+
+const CONTROL_CHAR_MAP: Record<number, string> = {
+  0: '',
+  10: '\n',
+  13: '\n',
+};
+
+const MAX_REDIRECTS = 5;
+
+const toTextFragment = (char: HWPChar): string => {
+  if (typeof char.value === 'string') {
+    return char.value;
+  }
+
+  if (typeof char.value === 'number') {
+    const mapped = CONTROL_CHAR_MAP[char.value];
+    if (typeof mapped === 'string') {
+      return mapped;
+    }
+  }
+
+  if (char.type === HWP_CHAR_TYPE.char && typeof char.value === 'number') {
+    return String.fromCharCode(char.value);
+  }
+
+  return '';
+};
+
+const paragraphToText = (paragraph: Paragraph): string => {
+  return paragraph.content.map(toTextFragment).join('');
+};
+
+interface HwpPlainTextOptions {
+  /**
+   * Options forwarded to the underlying CFB parser.
+   */
+  parseOptions?: CFB$ParsingOptions;
+  /**
+   * Controls how paragraphs are joined. When false, all paragraphs are concatenated without extra line breaks.
+   */
+  preserveParagraphBreaks?: boolean;
+}
+
+const bufferToPlainText = (buffer: Buffer, options: HwpPlainTextOptions = {}): string => {
+  const parseOptions: CFB$ParsingOptions = {
+    ...(options.parseOptions ?? {}),
+    type: 'buffer',
+  };
+  const document = parse(buffer, parseOptions) as HWPDocument;
+
+  const paragraphs = document.sections.flatMap((section) => section.content);
+  const paragraphTexts = paragraphs
+    .map(paragraphToText)
+    .map((text) => text.replace(/\r\n/g, '\n').replace(/\r/g, '\n'));
+
+  if (options.preserveParagraphBreaks === false) {
+    return paragraphTexts.join('');
+  }
+
+  return paragraphTexts.join('\n');
+};
+
+const downloadBinary = (target: string, redirects = 0): Promise<Buffer> => {
+  return new Promise((resolve, reject) => {
+    const url = new URL(target);
+    const getter = url.protocol === 'https:' ? httpsGet : httpGet;
+
+    const request = getter(url, (response) => {
+      const { statusCode = 0, headers } = response;
+
+      if (statusCode >= 300 && statusCode < 400 && headers.location) {
+        if (redirects >= MAX_REDIRECTS) {
+          response.resume();
+          reject(new Error(`Too many redirects while fetching ${target}`));
+          return;
+        }
+
+        const redirectUrl = new URL(headers.location, url).toString();
+        response.destroy();
+        downloadBinary(redirectUrl, redirects + 1).then(resolve).catch(reject);
+        return;
+      }
+
+      if (statusCode >= 400) {
+        response.resume();
+        reject(new Error(`Request to ${target} failed with status code ${statusCode}`));
+        return;
+      }
+
+      const chunks: Buffer[] = [];
+      response.on('data', (chunk) => {
+        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+      });
+      response.on('end', () => resolve(Buffer.concat(chunks)));
+      response.on('error', reject);
+    });
+
+    request.on('error', reject);
+  });
+};
+
+const readHwpAsPlainText = async (
+  filePath: string,
+  options: HwpPlainTextOptions = {}
+): Promise<string> => {
+  const buffer = await readFile(filePath);
+  return bufferToPlainText(buffer, options);
+};
+
+const readHwpAsPlainTextFromUrl = async (
+  url: string,
+  options: HwpPlainTextOptions = {}
+): Promise<string> => {
+  const buffer = await downloadBinary(url.trim());
+  return bufferToPlainText(buffer, options);
+};
+
+export {
+  bufferToPlainText,
+  convertHwp,
+  convertHwpToPdf,
+  convertHwpToDocx,
+  convertHwpToXml,
+  readHwpAsHtml,
+  writeHwpFromDocx,
+  isHwpSupportedEnvironment,
+  readHwpAsPlainText,
+  readHwpAsPlainTextFromUrl,
+};
+
+export type {
+  HwpConvertibleFormat,
+  HwpConvertOptions,
+  HwpConvertResult,
+  HwpReadOptions,
+  HwpWriteOptions,
+  HwpPlainTextOptions,
+};
+
+export default readHwpAsPlainText;

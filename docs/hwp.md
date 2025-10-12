@@ -105,3 +105,24 @@ linux 환경에서 실행되는 것을 기준으로 hwp.ts를 구현한 후에, 
   - 설치 후에는 soffice --headless --convert-to pdf test.hwp 같은 명령으로 HWP 변환이 성공하는지 확
     인하고, 필요한 경우 sudo update-alternatives --config soffice로 올바른 바이너리가 선택되어 있는
     지 점검하세요.
+
+===
+
+## 샘플
+
+https://www.kookje.ac.kr/lifelong/index.php?pCode=stusquaredata&mode=fdn&idx=192&num=1
+
+
+https://blog.kakaocdn.net/dna/ppwK5/btq7lP41aBY/AAAAAAAAAAAAAAAAAAAAAN6_SNvFnaRk5ARLUpua0oYCU8uHkDIsvLcO4d_amNix/%EC%9E%85%EB%B2%95%EC%98%88%EA%B3%A0(%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C+%EB%82%A8%EA%B5%AC+%EA%B5%AC%EC%84%B8+%EC%A1%B0%EB%A1%80+%EC%9D%BC%EB%B6%80%EA%B0%9C%EC%A0%95%EC%A1%B0%EB%A1%80%EC%95%88).hwpx?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1761922799&allow_ip=&allow_referer=&signature=%2BKBTtq%2BdnUIQUEmcokTv%2BMn6i4c%3D&attach=1&knm=tfile.hwpx
+
+===
+
+node --loader ts-node/esm -e "import { readHwpAsPlainText } from './src/hwp.ts'; import { resolve } from 'node:path';    readHwpAsPlainText(resolve('./samples/001.hwp')).then(text => console.log(text.slice(0,120))).catch(err => { console.error(err); process.exitCode = 1; });"
+
+
+===
+
+# python
+
+https://tech.hancom.com/python-hwp-parsing-1/
+

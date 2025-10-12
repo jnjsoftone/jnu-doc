@@ -4,6 +4,9 @@
 # Ubuntu/Debian
 sudo apt-get install pandoc
 
+# synology NAS(DSM 7.2.2)
+
+
 # macOS
 brew install pandoc
 
