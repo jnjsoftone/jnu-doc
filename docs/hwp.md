@@ -126,3 +126,15 @@ node --loader ts-node/esm -e "import { readHwpAsPlainText } from './src/hwp.ts';
 
 https://tech.hancom.com/python-hwp-parsing-1/
 
+
+===
+
+
+/var/services/homes/jungsam/apps/npmjs/jnu-doc/src/hwp.ts 파일을 리팩토링해주세요.
+
+- LibreOffice 를 사용하는 부분은 모두 제거해주세요.
+- /var/services/homes/jungsam/apps/npmjs/jnu-doc/src/hwpx.ts 를 참고해서 동일한 구조, 함수명(hwpx -> hwp)으로 만들어주세요.
+  - 출력은 plainText, html, markdown 만으로 합니다.
+  - 입력은 buffer, localPath, remoteUrl 입니다.
+  - export는 readHwp 만 합니다.
+

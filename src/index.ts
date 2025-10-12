@@ -42,5 +42,5 @@ export {
   htmlToMarkdown,
 } from './pandoc.js';
 export { mdTitle, mdContent, mdFrontmatter } from './markdn.js';
-export { readHwpAsPlainText, readHwpAsPlainTextFromUrl } from './hwp.js';
-export { readHwpxAsPlainText, readHwpxAsPlainTextFromUrl } from './hwpx.js';
+export { readHwp } from './hwp.js';
+export { readHwpx } from './hwpx.js';

@@ -1,13 +1,8 @@
 /**
- * Utilities for working with Hangul Word Processor (HWP) documents.
- * Includes conversion helpers based on LibreOffice as well as in-process
- * text extraction powered by hwp.js.
+ * Utilities for reading HWP (Hangul Word Processor) documents and extracting content.
+ * Powered by hwp.js for in-process text extraction.
  */
-import { execFile } from 'node:child_process';
-import { access, constants, mkdtemp, readFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { basename, extname, join, resolve } from 'node:path';
-import { promisify } from 'node:util';
+import { readFile } from 'node:fs/promises';
 import { get as httpGet } from 'node:http';
 import { get as httpsGet } from 'node:https';
 import { URL } from 'node:url';
@@ -16,167 +11,8 @@ import { parse } from 'hwp.js';
 import type HWPDocument from 'hwp.js/build/models/document';
 import type Paragraph from 'hwp.js/build/models/paragraph';
 import type HWPChar from 'hwp.js/build/models/char';
-
-const execFileAsync = promisify(execFile);
-
-type HwpConvertibleFormat = 'pdf' | 'doc' | 'docx' | 'xml' | 'html';
-
-interface HwpConvertOptions {
-  outputDir?: string;
-  converterBinary?: string;
-  filter?: string;
-}
-
-interface HwpConvertResult {
-  outputPath: string;
-  stdout: string;
-  stderr: string;
-}
-
-const DEFAULT_BINARY = 'libreoffice';
-
-const formatExtensions: Record<HwpConvertibleFormat, string> = {
-  pdf: 'pdf',
-  doc: 'doc',
-  docx: 'docx',
-  xml: 'xml',
-  html: 'html',
-};
-
-type LibreOfficeArgs = {
-  format: HwpConvertibleFormat;
-  filter?: string;
-};
-
-function ensureLinux() {
-  if (process.platform !== 'linux') {
-    throw new Error('src/hwp.ts는 Linux 환경에서만 동작하도록 설계되었습니다.');
-  }
-}
-
-async function ensureBinaryExists(binary: string) {
-  try {
-    await execFileAsync('which', [binary]);
-  } catch (error) {
-    throw new Error(`필수 변환기(${binary})가 PATH에 없습니다. LibreOffice 또는 호환 도구를 설치하세요.`);
-  }
-}
-
-async function ensureFileExists(path: string) {
-  try {
-    await access(path, constants.F_OK);
-  } catch (error) {
-    throw new Error(`입력 파일을 찾을 수 없습니다: ${path}`);
-  }
-}
-
-async function resolveOutputDir(provided?: string) {
-  if (provided) {
-    return resolve(provided);
-  }
-
-  return await mkdtemp(join(tmpdir(), 'hwp-convert-'));
-}
-
-async function convertWithLibreOffice(
-  inputPath: string,
-  args: LibreOfficeArgs,
-  options: HwpConvertOptions = {}
-): Promise<HwpConvertResult> {
-  ensureLinux();
-
-  const binary = options.converterBinary ?? DEFAULT_BINARY;
-  await ensureBinaryExists(binary);
-
-  const resolvedInput = resolve(inputPath);
-  await ensureFileExists(resolvedInput);
-
-  const outputDir = await resolveOutputDir(options.outputDir);
-  const convertTo = args.filter ? `${args.format}:${args.filter}` : args.format;
-  const cmdArgs = [
-    '--headless',
-    '--nologo',
-    '--nolockcheck',
-    '--convert-to',
-    convertTo,
-    '--outdir',
-    outputDir,
-    resolvedInput,
-  ];
-
-  const { stdout, stderr } = await execFileAsync(binary, cmdArgs);
-  const extension = formatExtensions[args.format];
-  const outputPath = join(outputDir, `${basename(resolvedInput, extname(resolvedInput))}.${extension}`);
-
-  try {
-    await access(outputPath, constants.F_OK);
-  } catch (error) {
-    throw new Error(`LibreOffice 변환 출력 파일을 찾을 수 없습니다: ${outputPath}`);
-  }
-
-  return { outputPath, stdout, stderr };
-}
-
-async function convertHwp(
-  inputPath: string,
-  format: HwpConvertibleFormat,
-  options: HwpConvertOptions = {}
-): Promise<HwpConvertResult> {
-  return convertWithLibreOffice(inputPath, { format, filter: options.filter }, options);
-}
-
-async function convertHwpToPdf(
-  inputPath: string,
-  options: HwpConvertOptions = {}
-): Promise<HwpConvertResult> {
-  return convertWithLibreOffice(inputPath, { format: 'pdf', filter: options.filter }, options);
-}
-
-async function convertHwpToDocx(
-  inputPath: string,
-  options: HwpConvertOptions = {}
-): Promise<HwpConvertResult> {
-  return convertWithLibreOffice(inputPath, { format: 'docx', filter: options.filter }, options);
-}
-
-async function convertHwpToXml(
-  inputPath: string,
-  options: HwpConvertOptions = {}
-): Promise<HwpConvertResult> {
-  return convertWithLibreOffice(inputPath, { format: 'xml', filter: options.filter }, options);
-}
-
-interface HwpReadOptions extends HwpConvertOptions {
-  encoding?: BufferEncoding;
-}
-
-async function readHwpAsHtml(
-  inputPath: string,
-  options: HwpReadOptions = {}
-): Promise<string> {
-  const { outputPath } = await convertWithLibreOffice(
-    inputPath,
-    { format: 'html', filter: options.filter },
-    options
-  );
-
-  return readFile(outputPath, { encoding: options.encoding ?? 'utf8' });
-}
-
-interface HwpWriteOptions extends HwpConvertOptions {
-  workingDir?: string;
-}
-
-async function writeHwpFromDocx(
-  docxPath: string,
-  options: HwpWriteOptions = {}
-): Promise<HwpConvertResult> {
-  return convertWithLibreOffice(docxPath, { format: 'doc', filter: options.filter }, options);
-}
-
-function isHwpSupportedEnvironment() {
-  return process.platform === 'linux';
-}
+import TurndownService from 'turndown';
+import { JSDOM } from 'jsdom';
 
 const HWP_CHAR_TYPE = {
   char: 0,
@@ -192,6 +28,9 @@ const CONTROL_CHAR_MAP: Record<number, string> = {
 
 const MAX_REDIRECTS = 5;
 
+/**
+ * Convert HWP character to text fragment
+ */
 const toTextFragment = (char: HWPChar): string => {
   if (typeof char.value === 'string') {
     return char.value;
@@ -211,40 +50,36 @@ const toTextFragment = (char: HWPChar): string => {
   return '';
 };
 
+/**
+ * Convert paragraph to plain text
+ */
 const paragraphToText = (paragraph: Paragraph): string => {
   return paragraph.content.map(toTextFragment).join('');
 };
 
-interface HwpPlainTextOptions {
-  /**
-   * Options forwarded to the underlying CFB parser.
-   */
-  parseOptions?: CFB$ParsingOptions;
-  /**
-   * Controls how paragraphs are joined. When false, all paragraphs are concatenated without extra line breaks.
-   */
-  preserveParagraphBreaks?: boolean;
-}
-
-const bufferToPlainText = (buffer: Buffer, options: HwpPlainTextOptions = {}): string => {
-  const parseOptions: CFB$ParsingOptions = {
-    ...(options.parseOptions ?? {}),
-    type: 'buffer',
-  };
-  const document = parse(buffer, parseOptions) as HWPDocument;
-
-  const paragraphs = document.sections.flatMap((section) => section.content);
-  const paragraphTexts = paragraphs
-    .map(paragraphToText)
-    .map((text) => text.replace(/\r\n/g, '\n').replace(/\r/g, '\n'));
-
-  if (options.preserveParagraphBreaks === false) {
-    return paragraphTexts.join('');
-  }
-
-  return paragraphTexts.join('\n');
+/**
+ * Escape HTML special characters
+ */
+const escapeHtml = (text: string): string => {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 };
 
+/**
+ * Convert paragraph to HTML
+ */
+const paragraphToHtml = (paragraph: Paragraph): string => {
+  const text = paragraphToText(paragraph);
+  return `<p>${escapeHtml(text)}</p>`;
+};
+
+/**
+ * Download binary data from URL with redirect support
+ */
 const downloadBinary = (target: string, redirects = 0): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
     const url = new URL(target);
@@ -284,42 +119,188 @@ const downloadBinary = (target: string, redirects = 0): Promise<Buffer> => {
   });
 };
 
-const readHwpAsPlainText = async (
-  filePath: string,
-  options: HwpPlainTextOptions = {}
+export interface HwpReadOptions {
+  /**
+   * Options forwarded to the underlying CFB parser.
+   */
+  parseOptions?: CFB$ParsingOptions;
+  /**
+   * Controls how paragraphs are joined. When false, all paragraphs are concatenated without extra line breaks.
+   */
+  preserveParagraphBreaks?: boolean;
+}
+
+/**
+ * Convert HWP buffer to plain text
+ */
+const readHwpBufferAsPlainText = (buffer: Buffer, options: HwpReadOptions = {}): string => {
+  const parseOptions: CFB$ParsingOptions = {
+    ...(options.parseOptions ?? {}),
+    type: 'buffer',
+  };
+  const document = parse(buffer, parseOptions) as HWPDocument;
+
+  const paragraphs = document.sections.flatMap((section) => section.content);
+  const paragraphTexts = paragraphs
+    .map(paragraphToText)
+    .map((text) => text.replace(/\r\n/g, '\n').replace(/\r/g, '\n'));
+
+  if (options.preserveParagraphBreaks === false) {
+    return paragraphTexts.join('');
+  }
+
+  return paragraphTexts.join('\n');
+};
+
+/**
+ * Post-process HTML to clean up formatting issues
+ */
+const postProcessHTML = (html: string): string => {
+  return html
+    // Remove empty <p> tags
+    .replace(/<p>\s*<\/p>/g, '')
+    .replace(/<p><br><\/p>/g, '')
+    .replace(/<p>&nbsp;<\/p>/g, '')
+    // Clean up multiple consecutive newlines
+    .replace(/\n\s*\n\s*\n+/g, '\n\n')
+    // Remove whitespace-only paragraphs
+    .replace(/<p>[\s\u00a0]+<\/p>/g, '');
+};
+
+/**
+ * Convert HWP buffer to HTML
+ */
+const readHwpBufferAsHTML = (buffer: Buffer, options: HwpReadOptions = {}): string => {
+  const parseOptions: CFB$ParsingOptions = {
+    ...(options.parseOptions ?? {}),
+    type: 'buffer',
+  };
+  const document = parse(buffer, parseOptions) as HWPDocument;
+
+  const paragraphs = document.sections.flatMap((section) => section.content);
+  const htmlParagraphs = paragraphs.map(paragraphToHtml);
+
+  let htmlBody = htmlParagraphs.join('\n');
+  htmlBody = postProcessHTML(htmlBody);
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HWP Document</title>
+  <style>
+    body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+    p { margin: 10px 0; }
+  </style>
+</head>
+<body>
+${htmlBody}
+</body>
+</html>`;
+};
+
+/**
+ * Configure Turndown service for HTML to Markdown conversion
+ */
+const configureTurndownService = (): TurndownService => {
+  const turndownService = new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced',
+    emDelimiter: '_',
+  });
+
+  return turndownService;
+};
+
+/**
+ * Convert HTML to Markdown
+ */
+const convertHtmlToMarkdown = (html: string): string => {
+  const turndownService = configureTurndownService();
+
+  // Extract body content only
+  const bodyMatch = html.match(/<body>([\s\S]*?)<\/body>/);
+  const bodyContent = bodyMatch ? bodyMatch[1] : html;
+
+  let markdown = turndownService.turndown(bodyContent);
+
+  // Clean up markdown
+  markdown = markdown
+    // Remove excessive blank lines
+    .replace(/\n\s*\n\s*\n+/g, '\n\n')
+    // Trim
+    .trim();
+
+  return markdown;
+};
+
+/**
+ * Convert HWP buffer to Markdown
+ */
+const readHwpBufferAsMarkdown = (buffer: Buffer, options: HwpReadOptions = {}): string => {
+  const html = readHwpBufferAsHTML(buffer, options);
+  return convertHtmlToMarkdown(html);
+};
+
+/**
+ * Unified function to read HWP files from various sources and convert to different formats
+ *
+ * @param source - Can be a Buffer, local file path (string), or remote URL (string starting with http/https)
+ * @param output - Output format: 'plain' (default), 'html', or 'markdown'
+ * @param options - Optional reading options
+ * @returns Converted content as string
+ *
+ * @example
+ * ```typescript
+ * // From local file to plain text
+ * const text = await readHwp('./document.hwp');
+ * const text = await readHwp('./document.hwp', 'plain');
+ *
+ * // From URL to HTML
+ * const html = await readHwp('https://example.com/doc.hwp', 'html');
+ *
+ * // From buffer to Markdown
+ * const buffer = fs.readFileSync('./document.hwp');
+ * const markdown = await readHwp(buffer, 'markdown');
+ * ```
+ */
+const readHwp = async (
+  source: Buffer | string,
+  output: 'plain' | 'html' | 'markdown' = 'plain',
+  options: HwpReadOptions = {}
 ): Promise<string> => {
-  const buffer = await readFile(filePath);
-  return bufferToPlainText(buffer, options);
+  let buffer: Buffer;
+
+  // Determine source type and get buffer
+  if (Buffer.isBuffer(source)) {
+    // Source is already a buffer
+    buffer = source;
+  } else if (typeof source === 'string') {
+    // Check if it's a URL
+    if (source.trim().startsWith('http://') || source.trim().startsWith('https://')) {
+      // Remote URL
+      buffer = await downloadBinary(source.trim());
+    } else {
+      // Local file path
+      buffer = await readFile(source);
+    }
+  } else {
+    throw new Error('Invalid source type. Must be a Buffer, file path string, or URL string.');
+  }
+
+  // Convert based on output format
+  switch (output) {
+    case 'html':
+      return readHwpBufferAsHTML(buffer, options);
+    case 'markdown':
+      return readHwpBufferAsMarkdown(buffer, options);
+    case 'plain':
+    default:
+      return readHwpBufferAsPlainText(buffer, options);
+  }
 };
 
-const readHwpAsPlainTextFromUrl = async (
-  url: string,
-  options: HwpPlainTextOptions = {}
-): Promise<string> => {
-  const buffer = await downloadBinary(url.trim());
-  return bufferToPlainText(buffer, options);
-};
+export { readHwp };
 
-export {
-  bufferToPlainText,
-  convertHwp,
-  convertHwpToPdf,
-  convertHwpToDocx,
-  convertHwpToXml,
-  readHwpAsHtml,
-  writeHwpFromDocx,
-  isHwpSupportedEnvironment,
-  readHwpAsPlainText,
-  readHwpAsPlainTextFromUrl,
-};
-
-export type {
-  HwpConvertibleFormat,
-  HwpConvertOptions,
-  HwpConvertResult,
-  HwpReadOptions,
-  HwpWriteOptions,
-  HwpPlainTextOptions,
-};
-
-export default readHwpAsPlainText;
+export default readHwp;

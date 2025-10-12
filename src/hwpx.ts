@@ -771,16 +771,64 @@ const convertHtmlToMarkdown = (html: string): string => {
   return markdown;
 };
 
-export {
-  readHwpxBuffer,
-  readHwpxAsPlainText,
-  readHwpxAsPlainTextFromUrl,
-  readHwpxAsHTML,
-  readHwpxAsHTMLFromUrl,
-  readHwpxBufferAsHTML,
-  readHwpxAsMarkdown,
-  readHwpxAsMarkdownFromUrl,
-  readHwpxBufferAsMarkdown,
+/**
+ * Unified function to read HWPX files from various sources and convert to different formats
+ *
+ * @param source - Can be a Buffer, local file path (string), or remote URL (string starting with http/https)
+ * @param output - Output format: 'plain' (default), 'html', or 'markdown'
+ * @param options - Optional reading options
+ * @returns Converted content as string
+ *
+ * @example
+ * ```typescript
+ * // From local file to plain text
+ * const text = await readHwpx('./document.hwpx');
+ * const text = await readHwpx('./document.hwpx', 'plain');
+ *
+ * // From URL to HTML
+ * const html = await readHwpx('https://example.com/doc.hwpx', 'html');
+ *
+ * // From buffer to Markdown
+ * const buffer = fs.readFileSync('./document.hwpx');
+ * const markdown = await readHwpx(buffer, 'markdown');
+ * ```
+ */
+const readHwpx = async (
+  source: Buffer | string,
+  output: 'plain' | 'html' | 'markdown' = 'plain',
+  options: HwpxReadOptions = {}
+): Promise<string> => {
+  let buffer: Buffer;
+
+  // Determine source type and get buffer
+  if (Buffer.isBuffer(source)) {
+    // Source is already a buffer
+    buffer = source;
+  } else if (typeof source === 'string') {
+    // Check if it's a URL
+    if (source.trim().startsWith('http://') || source.trim().startsWith('https://')) {
+      // Remote URL
+      buffer = await downloadBinary(source.trim());
+    } else {
+      // Local file path
+      buffer = await readFile(source);
+    }
+  } else {
+    throw new Error('Invalid source type. Must be a Buffer, file path string, or URL string.');
+  }
+
+  // Convert based on output format
+  switch (output) {
+    case 'html':
+      return readHwpxBufferAsHTML(buffer);
+    case 'markdown':
+      return readHwpxBufferAsMarkdown(buffer);
+    case 'plain':
+    default:
+      return readHwpxBuffer(buffer, options);
+  }
 };
 
-export default readHwpxAsPlainText;
+export {
+  readHwpx,
+};

@@ -1,31 +1,7 @@
 /// <reference types="node" />
 /// <reference types="node" />
 import type { CFB$ParsingOptions } from 'cfb';
-type HwpConvertibleFormat = 'pdf' | 'doc' | 'docx' | 'xml' | 'html';
-interface HwpConvertOptions {
-    outputDir?: string;
-    converterBinary?: string;
-    filter?: string;
-}
-interface HwpConvertResult {
-    outputPath: string;
-    stdout: string;
-    stderr: string;
-}
-declare function convertHwp(inputPath: string, format: HwpConvertibleFormat, options?: HwpConvertOptions): Promise<HwpConvertResult>;
-declare function convertHwpToPdf(inputPath: string, options?: HwpConvertOptions): Promise<HwpConvertResult>;
-declare function convertHwpToDocx(inputPath: string, options?: HwpConvertOptions): Promise<HwpConvertResult>;
-declare function convertHwpToXml(inputPath: string, options?: HwpConvertOptions): Promise<HwpConvertResult>;
-interface HwpReadOptions extends HwpConvertOptions {
-    encoding?: BufferEncoding;
-}
-declare function readHwpAsHtml(inputPath: string, options?: HwpReadOptions): Promise<string>;
-interface HwpWriteOptions extends HwpConvertOptions {
-    workingDir?: string;
-}
-declare function writeHwpFromDocx(docxPath: string, options?: HwpWriteOptions): Promise<HwpConvertResult>;
-declare function isHwpSupportedEnvironment(): boolean;
-interface HwpPlainTextOptions {
+export interface HwpReadOptions {
     /**
      * Options forwarded to the underlying CFB parser.
      */
@@ -35,10 +11,29 @@ interface HwpPlainTextOptions {
      */
     preserveParagraphBreaks?: boolean;
 }
-declare const bufferToPlainText: (buffer: Buffer, options?: HwpPlainTextOptions) => string;
-declare const readHwpAsPlainText: (filePath: string, options?: HwpPlainTextOptions) => Promise<string>;
-declare const readHwpAsPlainTextFromUrl: (url: string, options?: HwpPlainTextOptions) => Promise<string>;
-export { bufferToPlainText, convertHwp, convertHwpToPdf, convertHwpToDocx, convertHwpToXml, readHwpAsHtml, writeHwpFromDocx, isHwpSupportedEnvironment, readHwpAsPlainText, readHwpAsPlainTextFromUrl, };
-export type { HwpConvertibleFormat, HwpConvertOptions, HwpConvertResult, HwpReadOptions, HwpWriteOptions, HwpPlainTextOptions, };
-export default readHwpAsPlainText;
+/**
+ * Unified function to read HWP files from various sources and convert to different formats
+ *
+ * @param source - Can be a Buffer, local file path (string), or remote URL (string starting with http/https)
+ * @param output - Output format: 'plain' (default), 'html', or 'markdown'
+ * @param options - Optional reading options
+ * @returns Converted content as string
+ *
+ * @example
+ * ```typescript
+ * // From local file to plain text
+ * const text = await readHwp('./document.hwp');
+ * const text = await readHwp('./document.hwp', 'plain');
+ *
+ * // From URL to HTML
+ * const html = await readHwp('https://example.com/doc.hwp', 'html');
+ *
+ * // From buffer to Markdown
+ * const buffer = fs.readFileSync('./document.hwp');
+ * const markdown = await readHwp(buffer, 'markdown');
+ * ```
+ */
+declare const readHwp: (source: Buffer | string, output?: 'plain' | 'html' | 'markdown', options?: HwpReadOptions) => Promise<string>;
+export { readHwp };
+export default readHwp;
 //# sourceMappingURL=hwp.d.ts.map
