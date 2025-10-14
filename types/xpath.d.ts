@@ -10,7 +10,6 @@ interface XpathSetting {
  * Cheer 클래스와 동일한 API를 제공
  */
 declare class Xpath {
-    private source;
     private doc;
     constructor(source: string);
     /**
@@ -118,5 +117,6 @@ declare class Xpath {
      */
     find(xpathExpr: string): Node[];
 }
-export { Xpath, XpathSetting };
+export { Xpath };
+export type { XpathSetting };
 //# sourceMappingURL=xpath.d.ts.map
