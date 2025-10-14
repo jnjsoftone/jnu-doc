@@ -13,12 +13,81 @@ interface XpathSetting {
 
 // & FUNCTIONS AREA
 /**
+ * XPath를 네임스페이스 인식 XPath로 변환
+ * HTML 문서는 XHTML 네임스페이스로 파싱되므로 local-name()을 사용해야 함
+ * 또한 HTML 파서가 중간 노드를 추가할 수 있으므로 / 를 // 로 변환하여 유연하게 매칭
+ */
+const normalizeXpath = (xpathExpr: string): string => {
+  // List of XPath keywords/attributes that should NOT be converted
+  const keywords = ['not', 'and', 'or', 'text', 'id', 'class', 'href', 'target', 'src', 'alt', 'title', 'value', 'name'];
+
+  let result = xpathExpr;
+
+  // Step 1: Replace all single / with // for flexible descendant matching
+  // But avoid converting inside predicates [@...]
+  let current = '';
+  let inPredicate = 0;
+
+  for (let i = 0; i < result.length; i++) {
+    const char = result[i];
+
+    if (char === '[') {
+      inPredicate++;
+      current += char;
+    } else if (char === ']') {
+      inPredicate--;
+      current += char;
+    } else if (char === '/' && inPredicate === 0) {
+      // Check if it's already // or followed by / or *
+      if (result[i + 1] === '/' || result[i + 1] === '*') {
+        current += char;
+      } else {
+        // Convert single / to //
+        current += '//';
+      }
+    } else {
+      current += char;
+    }
+  }
+
+  result = current;
+
+  // Step 2: Replace element names with *[local-name()="..."]
+  // Match tag names: letters followed by optional alphanumeric
+  result = result.replace(/(\/+)([a-zA-Z][a-zA-Z0-9]*)([\[@\/\]]|$)/g, (match, slashes, tagName, suffix) => {
+    // Don't convert keywords
+    if (keywords.includes(tagName)) {
+      return match;
+    }
+
+    return `${slashes}*[local-name()="${tagName}"]${suffix}`;
+  });
+
+  return result;
+};
+
+/**
  * XPath로 단일 노드 선택
  */
 const xpathSelect = (doc: Document, xpathExpr: string): Node | null => {
-  const result = xpath.select(xpathExpr, doc);
-  if (Array.isArray(result) && result.length > 0) {
-    return result[0] as Node;
+  // Normalize XPath for HTML documents with XHTML namespace
+  const normalizedXpath = normalizeXpath(xpathExpr);
+
+  try {
+    const result = xpath.select(normalizedXpath, doc);
+    if (Array.isArray(result) && result.length > 0) {
+      return result[0] as Node;
+    }
+  } catch (e) {
+    // If normalized XPath fails, try original
+    try {
+      const result = xpath.select(xpathExpr, doc);
+      if (Array.isArray(result) && result.length > 0) {
+        return result[0] as Node;
+      }
+    } catch (e2) {
+      console.error(`XPath selection failed: ${e2}`);
+    }
   }
   return null;
 };
@@ -27,9 +96,24 @@ const xpathSelect = (doc: Document, xpathExpr: string): Node | null => {
  * XPath로 여러 노드 선택
  */
 const xpathSelectAll = (doc: Document, xpathExpr: string): Node[] => {
-  const result = xpath.select(xpathExpr, doc);
-  if (Array.isArray(result)) {
-    return result as Node[];
+  // Normalize XPath for HTML documents with XHTML namespace
+  const normalizedXpath = normalizeXpath(xpathExpr);
+
+  try {
+    const result = xpath.select(normalizedXpath, doc);
+    if (Array.isArray(result)) {
+      return result as Node[];
+    }
+  } catch (e) {
+    // If normalized XPath fails, try original
+    try {
+      const result = xpath.select(xpathExpr, doc);
+      if (Array.isArray(result)) {
+        return result as Node[];
+      }
+    } catch (e2) {
+      console.error(`XPath selection failed: ${e2}`);
+    }
   }
   return [];
 };
@@ -313,11 +397,9 @@ const findElements = (doc: Document, xpathExpr: string): Node[] => {
  * Cheer 클래스와 동일한 API를 제공
  */
 class Xpath {
-  private source: string;
   private doc: Document;
 
   constructor(source: string) {
-    this.source = source;
     const parser = new DOMParser();
     // HTML로 파싱 시도, 실패하면 XML로 파싱
     try {
@@ -469,4 +551,5 @@ class Xpath {
 }
 
 // & EXPORT AREA
-export { Xpath, XpathSetting };
+export { Xpath };
+export type { XpathSetting };
