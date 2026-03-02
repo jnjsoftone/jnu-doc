@@ -1,4 +1,4 @@
-//  depends on `jnj-lib-base`
+﻿//  depends on `jnj-lib-base`
 //  npm install js-yaml ini csv-parse csv-stringify node-xlsx --save
 // npm i --save-dev @types/ini @types/js-yaml
 

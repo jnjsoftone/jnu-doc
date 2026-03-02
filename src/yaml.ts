@@ -1,4 +1,4 @@
-/**
+﻿/**
  * A library for Yaml Utility Functions
  *
  */

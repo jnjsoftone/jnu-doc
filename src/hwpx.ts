@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Utilities for reading HWPX documents and extracting plain text.
  */
 import { readFile } from 'node:fs/promises';

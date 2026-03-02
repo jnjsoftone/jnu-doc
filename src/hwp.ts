@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Utilities for reading HWP (Hangul Word Processor) documents and extracting content.
  * Powered by hwp.js for in-process text extraction.
  */

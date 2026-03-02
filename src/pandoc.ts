@@ -1,4 +1,4 @@
-/**
+﻿/**
  * A library for Pandoc Utility Functions
  *
  * Pandoc wrapper using Node.js child_process for secure document conversion.

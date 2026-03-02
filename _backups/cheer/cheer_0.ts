@@ -1,4 +1,4 @@
-import * as cheerio from 'cheerio';
+﻿import * as cheerio from 'cheerio';
 
 // * settings = [{'key': '', 'selector': '', 'attribute': ''}]
 interface CheerSetting {

@@ -1,4 +1,4 @@
-/// <reference types="node" />
+﻿/// <reference types="node" />
 /// <reference types="node" />
 export interface HwpxReadOptions {
     preserveParagraphBreaks?: boolean;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Convert SubRipText(`srt`) format string => Tab-Separated Values(`tsv`) format string
  */
 declare const tsvFromSrt: (str: string) => string;

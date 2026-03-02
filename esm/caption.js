@@ -1,4 +1,4 @@
-import r from"fs";import e from"path";let t=r=>`
+﻿import r from"fs";import e from"path";let t=r=>`
 ${r}`.replace(/\r\n/g,"\n").replace(/\n(\d+)\n+/g,"$1	").replace(/\n([^\d])/g,"	$1"),n=r=>`
 ${r}`.replace(/\r\n/g,"\n").replace(/^\s*\d+\s*$/gm,"").replace(/\d.+\-\->\s*\d.+/g,"").replace(/^\s*$/gm,"").replace(/\n{2,}/g,"\n").trim(),l=r=>`
 ${r}`.replace(/\r\n/g,"\n").replace(/WEBVTT\n/g,"").replace(/\n(\d+)\n+/g,"$1	").replace(/\n([^\d])/g,"	$1"),c=r=>`

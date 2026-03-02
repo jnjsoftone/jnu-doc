@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # [syntax] ./publish.sh [patch|minor|major] [-m "commit message"] [--dry-run] [--skip-tests] [--force]
 # default: patch, "chore: build for publish"
 

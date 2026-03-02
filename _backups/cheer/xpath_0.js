@@ -1,4 +1,4 @@
-import * as cheerio from 'cheerio';
+﻿import * as cheerio from 'cheerio';
 
 /**
  * XPath를 CSS 선택자로 변환하는 간단한 함수

@@ -1,4 +1,4 @@
-// & IMPORT AREA
+﻿// & IMPORT AREA
 import * as xpath from 'xpath';
 import { DOMParser, XMLSerializer } from '@xmldom/xmldom';
 

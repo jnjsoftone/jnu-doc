@@ -1,4 +1,4 @@
-declare const DEFAULT_CONFIG: {
+﻿declare const DEFAULT_CONFIG: {
     readonly headingStyle: "atx";
     readonly hr: "---";
     readonly bulletListMarker: "-";

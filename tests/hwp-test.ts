@@ -1,4 +1,4 @@
-// cd /var/services/homes/jungsam/apps/npmjs/jnu-doc && node --loader ts-node/esm tests/hwp-test.ts
+﻿// cd /var/services/homes/jungsam/apps/npmjs/jnu-doc && node --loader ts-node/esm tests/hwp-test.ts
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { readHwp } from '../src/hwp.js';

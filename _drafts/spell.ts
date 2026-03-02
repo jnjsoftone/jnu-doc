@@ -1,4 +1,4 @@
-// // https://github.com/9beach/hanspell
+﻿// // https://github.com/9beach/hanspell
 // import hanspell from 'hanspell';
 
 // interface SpellCheckResult {

@@ -1,4 +1,4 @@
-// 현재 사용 중인 방식 (추가 설치 불필요)
+﻿// 현재 사용 중인 방식 (추가 설치 불필요)
 import { unescape, escape } from 'querystring';
 
 const encodeHtml = (text: string): string => {

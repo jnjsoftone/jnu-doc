@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "jnu-doc",
   "version": "0.0.10",
   "description": "Jnjsoft Nodejs Utility Library for Documents(yaml, docx, xlsx, pdf, hwp, pandoc, ...) Management Functions in Typescript",

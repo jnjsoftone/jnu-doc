@@ -1,4 +1,4 @@
-interface XpathSetting {
+﻿interface XpathSetting {
     key: string;
     xpath: string;
     attribute?: string;

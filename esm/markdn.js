@@ -1,4 +1,4 @@
-import e from"turndown";import{sanitizeName as t}from"jnu-abc";import{escapeDoubleQuotes as r}from"./html.js";let n={headingStyle:"atx",hr:"---",bulletListMarker:"-",codeBlockStyle:"fenced",emDelimiter:"*",preformattedCode:!0},o={figure:{filter:"figure",replacement:(e,t)=>{let r=t.querySelector("img"),n=t.querySelector("figcaption");if(!r)return e;let o=r.getAttribute("alt")||"",i=r.getAttribute("src")||"",a=n?n.textContent?.trim():"";return`![${o}](${i})
+﻿import e from"turndown";import{sanitizeName as t}from"jnu-abc";import{escapeDoubleQuotes as r}from"./html.js";let n={headingStyle:"atx",hr:"---",bulletListMarker:"-",codeBlockStyle:"fenced",emDelimiter:"*",preformattedCode:!0},o={figure:{filter:"figure",replacement:(e,t)=>{let r=t.querySelector("img"),n=t.querySelector("figcaption");if(!r)return e;let o=r.getAttribute("alt")||"",i=r.getAttribute("src")||"",a=n?n.textContent?.trim():"";return`![${o}](${i})
 
 ${a}
 

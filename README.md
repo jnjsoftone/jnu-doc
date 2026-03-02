@@ -1,4 +1,4 @@
----
+﻿---
 - name: "jnu-doc"
 - description: "Jnjsoft Nodejs Utility Library for Documents(yaml, docx, xlsx, pdf, hwp, pandoc, ...) Management Functions in Typescript"
 - author: "JnJ One <jnjsoft.one@gmail.com>"

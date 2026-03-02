@@ -1,4 +1,4 @@
-/**
+﻿/**
  * A library for XLS(Excel) Utility Functions
  * https://www.npmjs.com/package/node-xlsx
  */

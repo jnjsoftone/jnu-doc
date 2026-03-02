@@ -1,4 +1,4 @@
-import ini from 'ini';
+﻿import ini from 'ini';
 import { loadFile, saveFile } from 'jnu-abc';
 
 const loadIni = (path: string) => {

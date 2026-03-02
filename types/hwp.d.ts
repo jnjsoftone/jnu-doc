@@ -1,4 +1,4 @@
-/// <reference types="node" />
+﻿/// <reference types="node" />
 /// <reference types="node" />
 import type { CFB$ParsingOptions } from 'cfb';
 export interface HwpReadOptions {

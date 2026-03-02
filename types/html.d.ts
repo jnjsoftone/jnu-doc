@@ -1,4 +1,4 @@
-declare const encodeHtml: (text: string) => string;
+﻿declare const encodeHtml: (text: string) => string;
 declare const decodeHtml: (text: string) => string;
 declare const escapeRegExp: (value: string) => string;
 declare const escapeMarkdown: (str: string) => string;

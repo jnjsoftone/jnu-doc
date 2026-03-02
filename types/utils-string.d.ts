@@ -1,4 +1,4 @@
-declare const escapeRegExp: (value: string) => string;
+﻿declare const escapeRegExp: (value: string) => string;
 declare const escapeMarkdown: (str: string) => string;
 declare const escapeValue: (value: string) => string;
 declare const unescapeValue: (value: string) => string;

@@ -1,4 +1,4 @@
-# Repository Guidelines
+﻿# Repository Guidelines
 
 ## Project Structure & Module Organization
 - `src/` contains TypeScript modules grouped by document format (`csv.ts`, `yaml.ts`, `caption.ts`) and re-exported through `src/index.ts`.

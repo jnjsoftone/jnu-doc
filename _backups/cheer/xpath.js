@@ -1,4 +1,4 @@
-import * as cheerio from 'cheerio';
+﻿import * as cheerio from 'cheerio';
 
 /**
  * 요소에서 텍스트 또는 속성값 추출
